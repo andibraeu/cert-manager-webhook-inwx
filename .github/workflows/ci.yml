@@ -77,15 +77,31 @@ jobs:
       
       - name: Prepare test config
         run: |
-          # Create placeholder values for envsubst if not set
-          export INWX_USERNAME=${INWX_USERNAME:-"test"}
-          export INWX_PASSWORD=${INWX_PASSWORD:-"test"}
-          export INWX_OTP_SECRET=${INWX_OTP_SECRET:-"test"}
+          # Set up environment variables for templates
+          export INWX_USER="${INWX_USER:-test-user}"
+          export INWX_PASSWORD="${INWX_PASSWORD:-test-password}"
+          export INWX_USER_OTP="${INWX_USER_OTP:-test-user-otp}"
+          export INWX_PASSWORD_OTP="${INWX_PASSWORD_OTP:-test-password-otp}"
+          export INWX_OTPKEY="${INWX_OTPKEY:-test-otp-key}"
           
+          # Create Base64 encoded versions
+          export INWX_USER_BASE64=$(echo -n "$INWX_USER" | base64 -w 0)
+          export INWX_PASSWORD_BASE64=$(echo -n "$INWX_PASSWORD" | base64 -w 0)
+          export INWX_USER_OTP_BASE64=$(echo -n "$INWX_USER_OTP" | base64 -w 0)
+          export INWX_PASSWORD_OTP_BASE64=$(echo -n "$INWX_PASSWORD_OTP" | base64 -w 0)
+          export INWX_OTPKEY_BASE64=$(echo -n "$INWX_OTPKEY" | base64 -w 0)
+          
+          # Generate test config files
           envsubst < testdata/config.json.tpl > testdata/config.json
           envsubst < testdata/secret-inwx-credentials.yaml.tpl > testdata/secret-inwx-credentials.yaml
           envsubst < testdata/config-otp.json.tpl > testdata/config-otp.json
           envsubst < testdata/secret-inwx-credentials-otp.yaml.tpl > testdata/secret-inwx-credentials-otp.yaml
+        env:
+          INWX_USER: ${{ secrets.INWX_USER }}
+          INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
+          INWX_USER_OTP: ${{ secrets.INWX_USER_OTP }}
+          INWX_PASSWORD_OTP: ${{ secrets.INWX_PASSWORD_OTP }}
+          INWX_OTPKEY: ${{ secrets.INWX_OTPKEY }}
       
       - name: Download dependencies
         run: go mod download
