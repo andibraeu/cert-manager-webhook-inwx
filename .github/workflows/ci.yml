@@ -1,0 +1,196 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Test Jobs
+  lint-helm:
+    name: Lint Helm Chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.13.0'
+      
+      - name: Lint Helm Chart
+        run: helm lint deploy/cert-manager-webhook-inwx
+
+  lint-go:
+    name: Lint Go Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      
+      - name: Install golint
+        run: go install golang.org/x/lint/golint@latest
+      
+      - name: Run golint
+        run: golint -set_exit_status ./...
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext-base
+      
+      - name: Fetch test binaries
+        run: ./scripts/fetch-test-binaries.sh
+      
+      - name: Prepare test config
+        run: |
+          # Create placeholder values for envsubst if not set
+          export INWX_USERNAME=${INWX_USERNAME:-"test"}
+          export INWX_PASSWORD=${INWX_PASSWORD:-"test"}
+          export INWX_OTP_SECRET=${INWX_OTP_SECRET:-"test"}
+          
+          envsubst < testdata/config.json.tpl > testdata/config.json
+          envsubst < testdata/secret-inwx-credentials.yaml.tpl > testdata/secret-inwx-credentials.yaml
+          envsubst < testdata/config-otp.json.tpl > testdata/config-otp.json
+          envsubst < testdata/secret-inwx-credentials-otp.yaml.tpl > testdata/secret-inwx-credentials-otp.yaml
+      
+      - name: Download dependencies
+        run: go mod download
+      
+      - name: Run tests
+        run: go test -v -cover ./...
+
+  # Build and Push Multi-Arch Docker Images
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    needs: [lint-helm, lint-go, test]
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+      
+      - name: Build and push multi-arch image
+        id: push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  # Release Helm Chart to GitHub Pages
+  release-chart:
+    name: Release Helm Chart
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    if: github.event_name == 'release' && false
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.13.0'
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      
+      - name: Prepare chart
+        run: |
+          mkdir -p public
+          cp README.md deploy/cert-manager-webhook-inwx/
+          
+          # Package chart
+          helm package deploy/cert-manager-webhook-inwx -d public/
+          
+          # Create or update index
+          if [ -f public/index.yaml ]; then
+            helm repo index public --url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }} --merge public/index.yaml
+          else
+            helm repo index public --url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          fi
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: ./public
+      
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2 
