@@ -106,8 +106,22 @@ jobs:
       - name: Download dependencies
         run: go mod download
       
-      - name: Run tests
-        run: go test -v -cover ./...
+      - name: Run tests (Unit tests only)
+        run: |
+          # Check if we have real INWX credentials
+          if [ -z "$INWX_USER" ] || [ "$INWX_USER" = "test-user" ]; then
+            echo "⚠️  No real INWX credentials found - API integration tests will be skipped"
+            echo "✅ Running tests (API tests will be skipped automatically)..."
+          else
+            echo "🔑 Real INWX credentials found - running full integration tests"
+          fi
+          go test -v -cover ./...
+        env:
+          INWX_USER: ${{ secrets.INWX_USER }}
+          INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
+          INWX_USER_OTP: ${{ secrets.INWX_USER_OTP }}
+          INWX_PASSWORD_OTP: ${{ secrets.INWX_PASSWORD_OTP }}
+          INWX_OTPKEY: ${{ secrets.INWX_OTPKEY }}
 
   # Build and Push Multi-Arch Docker Images
   build-and-push:

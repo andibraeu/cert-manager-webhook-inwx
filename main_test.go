@@ -20,6 +20,10 @@ var (
 )
 
 func TestRunSuite(t *testing.T) {
+	// Skip API integration tests if running with dummy credentials
+	if os.Getenv("INWX_USER") == "" || os.Getenv("INWX_USER") == "test-user" {
+		t.Skip("Skipping API integration tests - no real INWX credentials provided")
+	}
 
 	if os.Getenv("TEST_ZONE_NAME") != "" {
 		zone = os.Getenv("TEST_ZONE_NAME")
@@ -72,6 +76,10 @@ func TestRunSuite(t *testing.T) {
 }
 
 func TestRunSuiteWithSecret(t *testing.T) {
+	// Skip API integration tests if running with dummy credentials
+	if os.Getenv("INWX_USER") == "" || os.Getenv("INWX_USER") == "test-user" {
+		t.Skip("Skipping API integration tests - no real INWX credentials provided")
+	}
 
 	if os.Getenv("TEST_ZONE_NAME") != "" {
 		zone = os.Getenv("TEST_ZONE_NAME")
@@ -123,6 +131,10 @@ func TestRunSuiteWithSecret(t *testing.T) {
 }
 
 func TestRunSuiteWithTwoFA(t *testing.T) {
+	// Skip API integration tests if running with dummy credentials
+	if os.Getenv("INWX_USER_OTP") == "" || os.Getenv("INWX_USER_OTP") == "test-user-otp" {
+		t.Skip("Skipping API integration tests - no real INWX OTP credentials provided")
+	}
 
 	if os.Getenv("TEST_ZONE_NAME_WITH_TWO_FA") != "" {
 		zoneTwoFA = os.Getenv("TEST_ZONE_NAME_WITH_TWO_FA")
@@ -176,6 +188,10 @@ func TestRunSuiteWithTwoFA(t *testing.T) {
 }
 
 func TestRunSuiteWithSecretAndTwoFA(t *testing.T) {
+	// Skip API integration tests if running with dummy credentials
+	if os.Getenv("INWX_USER_OTP") == "" || os.Getenv("INWX_USER_OTP") == "test-user-otp" {
+		t.Skip("Skipping API integration tests - no real INWX OTP credentials provided")
+	}
 
 	if os.Getenv("TEST_ZONE_NAME_WITH_TWO_FA") != "" {
 		zoneTwoFA = os.Getenv("TEST_ZONE_NAME_WITH_TWO_FA")
