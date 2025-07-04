@@ -50,15 +50,14 @@ jobs:
             exit 1
           fi
       
-      - name: Install and run golint (Go 1.13 compatible)
+      - name: Run go vet (built-in linter)
+        run: go vet ./...
+      
+      - name: Run basic Go checks
         run: |
-          # Set GOPATH for Go 1.13
-          export GOPATH=$HOME/go
-          export PATH=$PATH:$GOPATH/bin
-          # Install golint the Go 1.13 way
-          go get -u golang.org/x/lint/golint
-          # Run golint
-          golint -set_exit_status ./...
+          # Check for unused imports and other basic issues
+          go build -v ./...
+          echo "✅ Go code builds successfully"
 
   test:
     name: Run Tests
