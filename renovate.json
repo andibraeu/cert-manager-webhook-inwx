@@ -1,0 +1,64 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "docker:enableMajor",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":separatePatchReleases"
+  ],
+  "schedule": ["before 6am on monday"],
+  "timezone": "Europe/Berlin",
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "Group Go modules updates",
+      "matchManagers": ["gomod"],
+      "groupName": "Go modules",
+      "semanticCommitType": "deps",
+      "semanticCommitScope": "go"
+    },
+    {
+      "description": "Group GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "semanticCommitType": "ci",
+      "semanticCommitScope": "actions"
+    },
+    {
+      "description": "Group Docker updates",
+      "matchManagers": ["dockerfile"],
+      "groupName": "Docker",
+      "semanticCommitType": "docker",
+      "semanticCommitScope": "base"
+    },
+    {
+      "description": "Auto-merge patch updates for trusted packages",
+      "matchUpdateTypes": ["patch"],
+      "matchPackagePatterns": [
+        "^golang.org/x/",
+        "^k8s.io/",
+        "^github.com/jetstack/"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "requiredStatusChecks": null
+    },
+    {
+      "description": "Pin major cert-manager updates for manual review",
+      "matchPackageNames": ["github.com/jetstack/cert-manager"],
+      "matchUpdateTypes": ["major"],
+      "reviewersFromCodeOwners": true,
+      "addLabels": ["breaking-change"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"],
+    "assignees": ["@andibraeu"]
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on sunday"]
+  }
+} 
