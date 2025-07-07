@@ -89,7 +89,7 @@ func TestConfigLoading(t *testing.T) {
 			}
 
 			config, err := LoadConfigFromChallenge(challenge)
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Error("Expected error but got none")
@@ -119,11 +119,11 @@ func TestConfigLoading(t *testing.T) {
 
 func TestCredentialsRetrieval(t *testing.T) {
 	tests := []struct {
-		name        string
-		config      *Config
+		name         string
+		config       *Config
 		setupSecrets func(*MockSecretReader)
-		expected    *Credentials
-		expectError bool
+		expected     *Credentials
+		expectError  bool
 	}{
 		{
 			name: "credentials from config",
@@ -178,7 +178,7 @@ func TestCredentialsRetrieval(t *testing.T) {
 		{
 			name: "mixed credentials - config takes precedence",
 			config: &Config{
-				Username: "configuser", // This should take precedence
+				Username:             "configuser", // This should take precedence
 				PasswordSecretKeyRef: &SecretKeySelector{Name: "inwx-creds", Key: "password"},
 			},
 			setupSecrets: func(sr *MockSecretReader) {
@@ -215,7 +215,7 @@ func TestCredentialsRetrieval(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			secretReader := NewMockSecretReader()
-			
+
 			if tt.setupSecrets != nil {
 				tt.setupSecrets(secretReader)
 			}
@@ -284,7 +284,7 @@ func TestDNSChallengeSolver(t *testing.T) {
 					t.Errorf("Expected 1 record to be created, got %d", len(dns.CreatedRecords))
 					return
 				}
-				
+
 				record := dns.CreatedRecords[0]
 				if record.Domain != "example.com" {
 					t.Errorf("Expected domain 'example.com', got %s", record.Domain)
@@ -349,7 +349,7 @@ func TestDNSChallengeSolver(t *testing.T) {
 					Type:    "TXT",
 					Content: "old-challenge-key",
 				}
-				
+
 				config.Config = &Config{
 					Username: "testuser",
 					Password: "testpass",
@@ -417,21 +417,21 @@ func LoadConfigFromChallenge(ch *v1alpha1.ChallengeRequest) (*Config, error) {
 		TTL:     300,
 		Sandbox: false,
 	}
-	
+
 	if ch.Config == nil {
 		return config, nil
 	}
-	
+
 	// Parse JSON for testing purposes
 	configStr := string(ch.Config.Raw)
 	if configStr == `{}` {
 		return config, nil
 	}
-	
+
 	if configStr == `{invalid json}` {
 		return nil, fmt.Errorf("invalid JSON")
 	}
-	
+
 	// Simple parsing for test cases
 	if configStr == `{"ttl": 600}` {
 		config.TTL = 600
@@ -449,7 +449,7 @@ func LoadConfigFromChallenge(ch *v1alpha1.ChallengeRequest) (*Config, error) {
 			Key:  "username",
 		}
 	}
-	
+
 	return config, nil
 }
 
@@ -457,7 +457,7 @@ func GetCredentials(config *Config, secretReader SecretReader, namespace string)
 	// This would be the actual implementation
 	// Simplified for testing
 	creds := &Credentials{}
-	
+
 	if config.Username != "" {
 		creds.Username = config.Username
 	} else if config.UsernameSecretKeyRef != nil {
@@ -471,7 +471,7 @@ func GetCredentials(config *Config, secretReader SecretReader, namespace string)
 			return nil, fmt.Errorf("key %s not found in secret", config.UsernameSecretKeyRef.Key)
 		}
 	}
-	
+
 	if config.Password != "" {
 		creds.Password = config.Password
 	} else if config.PasswordSecretKeyRef != nil {
@@ -485,7 +485,7 @@ func GetCredentials(config *Config, secretReader SecretReader, namespace string)
 			return nil, fmt.Errorf("key %s not found in secret", config.PasswordSecretKeyRef.Key)
 		}
 	}
-	
+
 	if config.OTPKey != "" {
 		creds.OTPKey = config.OTPKey
 	} else if config.OTPKeySecretKeyRef != nil {
@@ -497,7 +497,7 @@ func GetCredentials(config *Config, secretReader SecretReader, namespace string)
 			creds.OTPKey = string(data)
 		}
 	}
-	
+
 	return creds, nil
 }
 
@@ -521,25 +521,25 @@ func (s *TestableSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 	if err != nil {
 		return err
 	}
-	
+
 	creds, err := GetCredentials(config, s.secretReader, ch.ResourceNamespace)
 	if err != nil {
 		return err
 	}
-	
+
 	err = s.dnsClient.Login()
 	if err != nil {
 		return err
 	}
 	defer s.dnsClient.Logout()
-	
+
 	if creds.OTPKey != "" {
 		err = s.dnsClient.UnlockAccount(creds.OTPKey)
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	request := &goinwx.NameserverRecordRequest{
 		Domain:  trimSuffix(ch.ResolvedZone, "."),
 		Name:    trimSuffix(ch.ResolvedFQDN, "."),
@@ -547,7 +547,7 @@ func (s *TestableSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 		Content: ch.Key,
 		TTL:     config.TTL,
 	}
-	
+
 	return s.dnsClient.CreateRecord(request)
 }
 
@@ -556,31 +556,31 @@ func (s *TestableSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 	if err != nil {
 		return err
 	}
-	
+
 	err = s.dnsClient.Login()
 	if err != nil {
 		return err
 	}
 	defer s.dnsClient.Logout()
-	
+
 	infoRequest := &goinwx.NameserverInfoRequest{
 		Domain: trimSuffix(ch.ResolvedZone, "."),
 		Name:   trimSuffix(ch.ResolvedFQDN, "."),
 		Type:   "TXT",
 	}
-	
+
 	response, err := s.dnsClient.InfoRecords(infoRequest)
 	if err != nil {
 		return err
 	}
-	
+
 	for _, record := range response.Records {
 		err = s.dnsClient.DeleteRecord(record.ID)
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
@@ -589,4 +589,4 @@ func trimSuffix(s, suffix string) string {
 		return s[:len(s)-len(suffix)]
 	}
 	return s
-} 
+}

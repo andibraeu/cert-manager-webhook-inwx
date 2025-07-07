@@ -41,14 +41,14 @@ type Solver interface {
 
 // Config represents the webhook configuration
 type Config struct {
-	TTL                  int                         `json:"ttl,omitempty"`
-	Sandbox              bool                        `json:"sandbox,omitempty"`
-	Username             string                      `json:"username"`
-	Password             string                      `json:"password"`
-	OTPKey               string                      `json:"otpKey"`
-	UsernameSecretKeyRef *SecretKeySelector          `json:"usernameSecretKeyRef"`
-	PasswordSecretKeyRef *SecretKeySelector          `json:"passwordSecretKeyRef"`
-	OTPKeySecretKeyRef   *SecretKeySelector          `json:"otpKeySecretKeyRef"`
+	TTL                  int                `json:"ttl,omitempty"`
+	Sandbox              bool               `json:"sandbox,omitempty"`
+	Username             string             `json:"username"`
+	Password             string             `json:"password"`
+	OTPKey               string             `json:"otpKey"`
+	UsernameSecretKeyRef *SecretKeySelector `json:"usernameSecretKeyRef"`
+	PasswordSecretKeyRef *SecretKeySelector `json:"passwordSecretKeyRef"`
+	OTPKeySecretKeyRef   *SecretKeySelector `json:"otpKeySecretKeyRef"`
 }
 
 // SecretKeySelector represents a reference to a secret key
@@ -62,4 +62,4 @@ type Credentials struct {
 	Username string
 	Password string
 	OTPKey   string
-} 
+}

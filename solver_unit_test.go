@@ -5,41 +5,41 @@ import (
 	"testing"
 
 	"github.com/jetstack/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
-	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
 
 // TestConfigLoading tests configuration parsing and validation
 func TestConfigLoading(t *testing.T) {
 	tests := []struct {
-		name        string
-		configJSON  string
-		expectedTTL int
+		name            string
+		configJSON      string
+		expectedTTL     int
 		expectedSandbox bool
-		expectError bool
+		expectError     bool
 	}{
 		{
-			name:        "default config",
-			configJSON:  `{}`,
-			expectedTTL: 300,
+			name:            "default config",
+			configJSON:      `{}`,
+			expectedTTL:     300,
 			expectedSandbox: false,
 		},
 		{
-			name:        "custom TTL",
-			configJSON:  `{"ttl": 600}`,
-			expectedTTL: 600,
+			name:            "custom TTL",
+			configJSON:      `{"ttl": 600}`,
+			expectedTTL:     600,
 			expectedSandbox: false,
 		},
 		{
-			name:        "TTL too low should use default",
-			configJSON:  `{"ttl": 100}`,
-			expectedTTL: 300, // Should use default
+			name:            "TTL too low should use default",
+			configJSON:      `{"ttl": 100}`,
+			expectedTTL:     300, // Should use default
 			expectedSandbox: false,
 		},
 		{
-			name:        "sandbox mode enabled",
-			configJSON:  `{"sandbox": true}`,
-			expectedTTL: 300,
+			name:            "sandbox mode enabled",
+			configJSON:      `{"sandbox": true}`,
+			expectedTTL:     300,
 			expectedSandbox: true,
 		},
 		{
@@ -57,7 +57,7 @@ func TestConfigLoading(t *testing.T) {
 			}
 
 			config, err := loadConfig(jsonData)
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Error("Expected error but got none")
@@ -118,7 +118,7 @@ func TestCredentialsValidation(t *testing.T) {
 			}
 
 			err := validateCredentials(creds)
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Error("Expected error but got none")
@@ -220,9 +220,9 @@ func TestSecretKeyExtraction(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
-		key      string
-		expected string
+		name        string
+		key         string
+		expected    string
 		expectError bool
 	}{
 		{
@@ -250,7 +250,7 @@ func TestSecretKeyExtraction(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := extractSecretKey(secret, tt.key)
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Error("Expected error but got none")
@@ -327,7 +327,7 @@ func TestChallengeValidation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := validateChallengeRequest(tt.challenge)
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Error("Expected error but got none")
@@ -395,7 +395,7 @@ func validateChallengeRequest(ch *v1alpha1.ChallengeRequest) error {
 func BenchmarkConfigLoading(b *testing.B) {
 	configJSON := `{"ttl": 600, "sandbox": true, "username": "testuser", "password": "testpass"}`
 	jsonData := &extapi.JSON{Raw: []byte(configJSON)}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, err := loadConfig(jsonData)
@@ -407,9 +407,9 @@ func BenchmarkConfigLoading(b *testing.B) {
 
 func BenchmarkDomainNameProcessing(b *testing.B) {
 	zone := "example.com."
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		processDomainName(zone)
 	}
-} 
+}

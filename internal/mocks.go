@@ -17,13 +17,13 @@ type MockDNSClient struct {
 	InfoRecordsError  error
 	DeleteRecordError error
 	UnlockError       error
-	
-	Records           map[string]*goinwx.NameserverRecord
-	LoginCalled       bool
-	LogoutCalled      bool
-	UnlockCalled      bool
-	CreatedRecords    []*goinwx.NameserverRecordRequest
-	DeletedRecordIDs  []int
+
+	Records          map[string]*goinwx.NameserverRecord
+	LoginCalled      bool
+	LogoutCalled     bool
+	UnlockCalled     bool
+	CreatedRecords   []*goinwx.NameserverRecordRequest
+	DeletedRecordIDs []int
 }
 
 func NewMockDNSClient() *MockDNSClient {
@@ -48,9 +48,9 @@ func (m *MockDNSClient) CreateRecord(request *goinwx.NameserverRecordRequest) er
 	if m.CreateRecordError != nil {
 		return m.CreateRecordError
 	}
-	
+
 	m.CreatedRecords = append(m.CreatedRecords, request)
-	
+
 	// Create a mock record
 	recordID := len(m.Records) + 1
 	key := fmt.Sprintf("%s-%s", request.Domain, request.Name)
@@ -61,7 +61,7 @@ func (m *MockDNSClient) CreateRecord(request *goinwx.NameserverRecordRequest) er
 		Content: request.Content,
 		TTL:     request.TTL,
 	}
-	
+
 	return nil
 }
 
@@ -69,14 +69,14 @@ func (m *MockDNSClient) InfoRecords(request *goinwx.NameserverInfoRequest) (*Nam
 	if m.InfoRecordsError != nil {
 		return nil, m.InfoRecordsError
 	}
-	
+
 	var records []goinwx.NameserverRecord
 	key := fmt.Sprintf("%s-%s", request.Domain, request.Name)
-	
+
 	if record, exists := m.Records[key]; exists {
 		records = append(records, *record)
 	}
-	
+
 	return &NameserverInfoResponse{
 		Records: records,
 	}, nil
@@ -86,9 +86,9 @@ func (m *MockDNSClient) DeleteRecord(recordID int) error {
 	if m.DeleteRecordError != nil {
 		return m.DeleteRecordError
 	}
-	
+
 	m.DeletedRecordIDs = append(m.DeletedRecordIDs, recordID)
-	
+
 	// Find and remove the record
 	for key, record := range m.Records {
 		if record.ID == recordID {
@@ -96,7 +96,7 @@ func (m *MockDNSClient) DeleteRecord(recordID int) error {
 			break
 		}
 	}
-	
+
 	return nil
 }
 
@@ -121,12 +121,12 @@ func (m *MockSecretReader) GetSecret(ctx context.Context, namespace, name string
 	if m.Error != nil {
 		return nil, m.Error
 	}
-	
+
 	key := fmt.Sprintf("%s/%s", namespace, name)
 	if secret, exists := m.Secrets[key]; exists {
 		return secret, nil
 	}
-	
+
 	return nil, fmt.Errorf("secret %s not found", key)
 }
 
@@ -158,4 +158,4 @@ func (m *MockConfigProvider) LoadConfig(ch *v1alpha1.ChallengeRequest) (*Config,
 		return nil, m.Error
 	}
 	return m.Config, nil
-} 
+}
