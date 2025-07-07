@@ -1,21 +1,34 @@
-FROM golang:1.13-alpine AS build
+FROM golang:1.21-alpine AS build
 
 ARG GOARCH="amd64"
 ARG GOARM=""
 
 WORKDIR /workspace
 
-ENV GOPATH="/workspace/.go"
+# Install ca-certificates for SSL connections
+RUN apk update && apk add --no-cache ca-certificates git
 
-COPY . .
-
+# Copy go.mod and go.sum first for better caching
+COPY go.mod go.sum ./
 RUN go mod download
 
-RUN CGO_ENABLED=0 GOARCH=$GOARCH GOARM=$GOARM go build -v -o webhook -ldflags '-w -s -extldflags "-static"' .
+# Copy source code
+COPY . .
 
-FROM scratch
+# Build the binary
+RUN CGO_ENABLED=0 GOARCH=$GOARCH GOARM=$GOARM go build -v -o webhook \
+    -ldflags '-w -s -extldflags "-static"' .
 
+# Use distroless for better security
+FROM gcr.io/distroless/static:nonroot
+
+# Copy CA certificates
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+# Copy the binary
 COPY --from=build /workspace/webhook /webhook
+
+# Use non-root user
+USER nonroot:nonroot
 
 ENTRYPOINT ["/webhook"]

@@ -5,12 +5,12 @@ import (
 	"github.com/jetstack/cert-manager/test/acme/dns"
 	"github.com/jetstack/cert-manager/test/acme/dns/server"
 	"gitlab.com/smueller18/cert-manager-webhook-inwx/test"
-	"io/ioutil"
+	"os"
 	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"log"
-	"os"
 	"testing"
 	"time"
+	"context"
 )
 
 var (
@@ -30,7 +30,7 @@ func TestRunSuite(t *testing.T) {
 	}
 	fqdn = "cert-manager-dns01-tests." + zone
 
-	ctx := logf.NewContext(nil, nil, t.Name())
+	ctx := logf.NewContext(context.TODO(), nil, t.Name())
 
 	srv := &server.BasicServer{
 		Handler: &test.Handler{
@@ -52,7 +52,7 @@ func TestRunSuite(t *testing.T) {
 	}
 	defer srv.Shutdown()
 
-	d, err := ioutil.ReadFile("testdata/config.json")
+	d, err := os.ReadFile("testdata/config.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -86,7 +86,7 @@ func TestRunSuiteWithSecret(t *testing.T) {
 	}
 	fqdn = "cert-manager-dns01-tests-with-secret." + zone
 
-	ctx := logf.NewContext(nil, nil, t.Name())
+	ctx := logf.NewContext(context.TODO(), nil, t.Name())
 
 	srv := &server.BasicServer{
 		Handler: &test.Handler{
@@ -108,7 +108,7 @@ func TestRunSuiteWithSecret(t *testing.T) {
 	}
 	defer srv.Shutdown()
 
-	d, err := ioutil.ReadFile("testdata/config.secret.json")
+	d, err := os.ReadFile("testdata/config.secret.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -142,7 +142,7 @@ func TestRunSuiteWithTwoFA(t *testing.T) {
 
 	fqdn = "cert-manager-dns01-tests." + zoneTwoFA
 
-	ctx := logf.NewContext(nil, nil, t.Name())
+	ctx := logf.NewContext(context.TODO(), nil, t.Name())
 
 	srv := &server.BasicServer{
 		Handler: &test.Handler{
@@ -164,7 +164,7 @@ func TestRunSuiteWithTwoFA(t *testing.T) {
 	}
 	defer srv.Shutdown()
 
-	d, err := ioutil.ReadFile("testdata/config-otp.json")
+	d, err := os.ReadFile("testdata/config-otp.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -198,7 +198,7 @@ func TestRunSuiteWithSecretAndTwoFA(t *testing.T) {
 	}
 	fqdn = "cert-manager-dns01-tests-with-secret." + zoneTwoFA
 
-	ctx := logf.NewContext(nil, nil, t.Name())
+	ctx := logf.NewContext(context.TODO(), nil, t.Name())
 
 	srv := &server.BasicServer{
 		Handler: &test.Handler{
@@ -220,7 +220,7 @@ func TestRunSuiteWithSecretAndTwoFA(t *testing.T) {
 	}
 	defer srv.Shutdown()
 
-	d, err := ioutil.ReadFile("testdata/config-otp.secret.json")
+	d, err := os.ReadFile("testdata/config-otp.secret.json")
 	if err != nil {
 		log.Fatal(err)
 	}

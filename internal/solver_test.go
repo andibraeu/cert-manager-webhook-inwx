@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"testing"
@@ -460,7 +461,7 @@ func GetCredentials(config *Config, secretReader SecretReader, namespace string)
 	if config.Username != "" {
 		creds.Username = config.Username
 	} else if config.UsernameSecretKeyRef != nil {
-		secret, err := secretReader.GetSecret(nil, namespace, config.UsernameSecretKeyRef.Name)
+		secret, err := secretReader.GetSecret(context.TODO(), namespace, config.UsernameSecretKeyRef.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -474,7 +475,7 @@ func GetCredentials(config *Config, secretReader SecretReader, namespace string)
 	if config.Password != "" {
 		creds.Password = config.Password
 	} else if config.PasswordSecretKeyRef != nil {
-		secret, err := secretReader.GetSecret(nil, namespace, config.PasswordSecretKeyRef.Name)
+		secret, err := secretReader.GetSecret(context.TODO(), namespace, config.PasswordSecretKeyRef.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -488,7 +489,7 @@ func GetCredentials(config *Config, secretReader SecretReader, namespace string)
 	if config.OTPKey != "" {
 		creds.OTPKey = config.OTPKey
 	} else if config.OTPKeySecretKeyRef != nil {
-		secret, err := secretReader.GetSecret(nil, namespace, config.OTPKeySecretKeyRef.Name)
+		secret, err := secretReader.GetSecret(context.TODO(), namespace, config.OTPKeySecretKeyRef.Name)
 		if err != nil {
 			return nil, err
 		}

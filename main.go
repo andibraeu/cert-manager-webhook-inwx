@@ -260,7 +260,7 @@ func tryToUnlockWithOTPKey(creds *credentials, client goinwx.Client, retryAfterP
 
 	err = client.Account.Unlock(tan)
 
-	if err != nil && retryAfterPauseToSatisfyInwxSingleOTPKeyUsagePolicy == true {
+	if err != nil && retryAfterPauseToSatisfyInwxSingleOTPKeyUsagePolicy {
 		time.Sleep(30 * time.Second)
 		return tryToUnlockWithOTPKey(creds, client, false)
 	} else if err != nil {
@@ -268,5 +268,5 @@ func tryToUnlockWithOTPKey(creds *credentials, client goinwx.Client, retryAfterP
 		return err, fmt.Errorf("error Unlock opt-key: %v", err)
 	}
 
-	return err, nil
+	return nil, nil
 }

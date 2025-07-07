@@ -30,11 +30,9 @@ const (
 var requestCount = map[string]int{}
 
 type Handler struct {
-	Log logr.Logger
-
+	Log        logr.Logger
 	TxtRecords map[string][][]string
 	Zones      []string
-	tsigZone   string
 	lock       sync.Mutex
 }
 
