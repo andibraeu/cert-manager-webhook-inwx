@@ -1,6 +1,6 @@
 module gitlab.com/smueller18/cert-manager-webhook-inwx
 
-go 1.21
+go 1.24
 
 require (
 	github.com/go-logr/logr v0.2.1
