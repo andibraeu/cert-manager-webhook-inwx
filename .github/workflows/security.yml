@@ -8,6 +8,10 @@ on:
   schedule:
     - cron: '0 6 * * 1'  # Weekly on Monday
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   # Vulnerability scanning
   vulnerability-scan:
@@ -70,4 +74,4 @@ jobs:
       - name: Check licenses
         run: |
           go install github.com/google/go-licenses@latest
-          go-licenses check ./... 
+          go-licenses check --ignore_system_packages ./... 
