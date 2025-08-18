@@ -3,7 +3,7 @@ module gitlab.com/smueller18/cert-manager-webhook-inwx
 go 1.24
 
 require (
-	github.com/go-logr/logr v0.2.1
+	github.com/go-logr/logr v1.4.3
 	github.com/jetstack/cert-manager v1.0.1
 	github.com/miekg/dns v1.1.29
 	github.com/nrdcg/goinwx v0.6.1
@@ -13,6 +13,7 @@ require (
 	k8s.io/apimachinery v0.19.0
 	k8s.io/client-go v0.19.0
 	k8s.io/klog v1.0.0
+	k8s.io/klog/v2 v2.130.1
 )
 
 require (
@@ -83,7 +84,6 @@ require (
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	k8s.io/apiserver v0.19.0 // indirect
 	k8s.io/component-base v0.19.0 // indirect
-	k8s.io/klog/v2 v2.3.0 // indirect
 	k8s.io/kube-aggregator v0.19.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6 // indirect
 	k8s.io/utils v0.0.0-20200729134348-d5654de09c73 // indirect
