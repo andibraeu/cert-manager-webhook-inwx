@@ -32,11 +32,11 @@
             "matchManagers": [
                 "gomod"
             ],
-            "excludePackageNames": [
-                "/^k8s.io//"
-            ],
             "semanticCommitType": "deps",
-            "semanticCommitScope": "go"
+            "semanticCommitScope": "go",
+            "matchPackageNames": [
+                "!/^k8s.io//"
+            ]
         },
         {
             "description": "Group GitHub Actions updates",
