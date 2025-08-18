@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"github.com/andibraeu/cert-manager-webhook-inwx/test"
 	logf "github.com/jetstack/cert-manager/pkg/logs"
 	"github.com/jetstack/cert-manager/test/acme/dns"
 	"github.com/jetstack/cert-manager/test/acme/dns/server"
-	"github.com/andibraeu/cert-manager-webhook-inwx/test"
 	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"log"
 	"os"
