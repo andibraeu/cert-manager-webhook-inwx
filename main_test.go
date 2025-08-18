@@ -3,9 +3,8 @@ package main
 import (
 	"context"
 	"github.com/andibraeu/cert-manager-webhook-inwx/test"
-	logf "github.com/jetstack/cert-manager/pkg/logs"
-	"github.com/jetstack/cert-manager/test/acme/dns"
-	"github.com/jetstack/cert-manager/test/acme/dns/server"
+	logf "github.com/cert-manager/cert-manager/pkg/logs"
+	"github.com/cert-manager/cert-manager/test/acme/server"
 	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"log"
 	"os"
