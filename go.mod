@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/go-logr/logr v0.2.1
-	github.com/jetstack/cert-manager v1.0.1
+	github.com/jetstack/cert-manager v1.0.4
 	github.com/miekg/dns v1.1.29
 	github.com/nrdcg/goinwx v0.6.1
 	github.com/pquerna/otp v1.3.0
