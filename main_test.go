@@ -38,7 +38,7 @@ type testConfig struct {
 var (
 	zone      = "smueller18.de."
 	zoneTwoFA = "smueller18mfa.de."
-	
+
 	testEnv *envtest.Environment
 	cfg     *rest.Config
 )
@@ -68,13 +68,13 @@ func TestMain(m *testing.M) {
 	if err := testEnv.Stop(); err != nil {
 		panic(err)
 	}
-	
+
 	os.Exit(code)
 }
 
 func TestSolver_Present(t *testing.T) {
 	solver := &solver{}
-	
+
 	// Test basic configuration
 	configData := testConfig{
 		Username: os.Getenv("INWX_USER"),
@@ -82,7 +82,7 @@ func TestSolver_Present(t *testing.T) {
 		TTL:      300,
 		Sandbox:  true,
 	}
-	
+
 	configJSON, err := json.Marshal(configData)
 	if err != nil {
 		t.Fatalf("Failed to marshal config: %v", err)
@@ -111,7 +111,7 @@ func TestSolver_Present(t *testing.T) {
 
 func TestSolver_PresentWithSecret(t *testing.T) {
 	solver := &solver{}
-	
+
 	// Test with secret references (will fail in test environment but should not panic)
 	configData := testConfig{
 		UsernameSecretKeyRef: struct {
@@ -131,7 +131,7 @@ func TestSolver_PresentWithSecret(t *testing.T) {
 		TTL:     300,
 		Sandbox: true,
 	}
-	
+
 	configJSON, err := json.Marshal(configData)
 	if err != nil {
 		t.Fatalf("Failed to marshal config: %v", err)
@@ -165,7 +165,7 @@ func TestSolver_PresentWithTwoFA(t *testing.T) {
 	}
 
 	solver := &solver{}
-	
+
 	configData := testConfig{
 		Username: os.Getenv("INWX_USER_OTP"),
 		Password: os.Getenv("INWX_PASSWORD_OTP"),
@@ -173,7 +173,7 @@ func TestSolver_PresentWithTwoFA(t *testing.T) {
 		TTL:      300,
 		Sandbox:  true,
 	}
-	
+
 	configJSON, err := json.Marshal(configData)
 	if err != nil {
 		t.Fatalf("Failed to marshal config: %v", err)
@@ -210,7 +210,7 @@ func TestSolver_PresentWithSecretAndTwoFA(t *testing.T) {
 	}
 
 	solver := &solver{}
-	
+
 	// Test OTP with secret references
 	configData := testConfig{
 		UsernameSecretKeyRef: struct {
@@ -237,7 +237,7 @@ func TestSolver_PresentWithSecretAndTwoFA(t *testing.T) {
 		TTL:     300,
 		Sandbox: true,
 	}
-	
+
 	configJSON, err := json.Marshal(configData)
 	if err != nil {
 		t.Fatalf("Failed to marshal config: %v", err)
@@ -264,7 +264,7 @@ func TestSolver_PresentWithSecretAndTwoFA(t *testing.T) {
 func TestSolver_Name(t *testing.T) {
 	solver := &solver{}
 	name := solver.Name()
-	
+
 	if name != "inwx" {
 		t.Errorf("Expected solver name to be 'inwx', got '%s'", name)
 	}
@@ -274,16 +274,16 @@ func TestSolver_Timeout(t *testing.T) {
 	// Test that the solver doesn't hang indefinitely
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	
+
 	solver := &solver{}
-	
+
 	configData := testConfig{
 		Username: "test-user",
 		Password: "test-password",
 		TTL:      300,
 		Sandbox:  true,
 	}
-	
+
 	configJSON, err := json.Marshal(configData)
 	if err != nil {
 		t.Fatalf("Failed to marshal config: %v", err)
