@@ -8,7 +8,7 @@ import (
 
 	"github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
 	"github.com/nrdcg/goinwx"
-	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 func TestConfigLoading(t *testing.T) {
