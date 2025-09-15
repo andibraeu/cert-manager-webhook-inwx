@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v1.4.2
 	github.com/miekg/dns v1.1.62
 	github.com/nrdcg/goinwx v0.6.1
-	github.com/pquerna/otp v1.3.0
+	github.com/pquerna/otp v1.5.0
 	k8s.io/api v0.32.9
 	k8s.io/apiextensions-apiserver v0.32.9
 	k8s.io/apimachinery v0.32.9
