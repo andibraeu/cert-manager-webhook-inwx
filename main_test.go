@@ -36,8 +36,8 @@ type testConfig struct {
 }
 
 var (
-	zone      = "smueller18.de."
-	zoneTwoFA = "smueller18mfa.de."
+	zone      = "zollsoft.de."
+	zoneTwoFA = "zollsoftmfa.de."
 
 	testEnv *envtest.Environment
 	cfg     *rest.Config
