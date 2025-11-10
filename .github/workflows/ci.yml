@@ -114,9 +114,9 @@ jobs:
           envsubst < testdata/config-otp.json.tpl > testdata/config-otp.json
           envsubst < testdata/secret-inwx-credentials-otp.yaml.tpl > testdata/secret-inwx-credentials-otp.yaml
         env:
-          INWX_USER: ${{ secrets.INWX_USER }}
+          INWX_USER: ${{ variables.INWX_USER }}
           INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
-          INWX_USER_OTP: ${{ secrets.INWX_USER_OTP }}
+          INWX_USER_OTP: ${{ variables.INWX_USER_OTP }}
           INWX_PASSWORD_OTP: ${{ secrets.INWX_PASSWORD_OTP }}
           INWX_OTPKEY: ${{ secrets.INWX_OTPKEY }}
       
@@ -134,9 +134,9 @@ jobs:
           fi
           go test -v -cover ./...
         env:
-          INWX_USER: ${{ secrets.INWX_USER }}
+          INWX_USER: ${{ variables.INWX_USER }}
           INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
-          INWX_USER_OTP: ${{ secrets.INWX_USER_OTP }}
+          INWX_USER_OTP: ${{ variables.INWX_USER_OTP }}
           INWX_PASSWORD_OTP: ${{ secrets.INWX_PASSWORD_OTP }}
           INWX_OTPKEY: ${{ secrets.INWX_OTPKEY }}
 
