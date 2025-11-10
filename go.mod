@@ -1,4 +1,4 @@
-module github.com/andibraeu/cert-manager-webhook-inwx
+module github.com/realzollsoft/cert-manager-webhook-inwx
 
 go 1.24
 
