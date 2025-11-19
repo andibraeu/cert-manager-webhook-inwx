@@ -66,9 +66,9 @@ func (s *solver) Present(ch *v1alpha1.ChallengeRequest) error {
 
 	defer func() {
 		if err := client.Account.Logout(); err != nil {
-			klog.Errorf("failed to log out from %s: %v", client.BaseURL, err)
+			klog.Errorf("failed to log out from INWX API: %v", err)
 		}
-		klog.V(3).Infof("logged out from %s", client.BaseURL)
+		klog.V(3).Infof("logged out from INWX API")
 	}()
 
 	var request = &goinwx.NameserverRecordRequest{
@@ -109,9 +109,9 @@ func (s *solver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 
 	defer func() {
 		if err := client.Account.Logout(); err != nil {
-			klog.Errorf("failed to log out from %s: %v", client.BaseURL, err)
+			klog.Errorf("failed to log out from INWX API: %v", err)
 		}
-		klog.V(3).Infof("logged out from %s", client.BaseURL)
+		klog.V(3).Infof("logged out from INWX API")
 	}()
 
 	response, err := client.Nameservers.Info(&goinwx.NameserverInfoRequest{
@@ -231,9 +231,9 @@ func (s *solver) newClientFromChallenge(ch *v1alpha1.ChallengeRequest) (*goinwx.
 		return nil, &cfg, fmt.Errorf("error getting credentials: %v", err)
 	}
 
-	client := *goinwx.NewClient(creds.Username, creds.Password, &goinwx.ClientOptions{Sandbox: cfg.Sandbox})
+	client := goinwx.NewClient(creds.Username, creds.Password, &goinwx.ClientOptions{Sandbox: cfg.Sandbox})
 
-	err = client.Account.Login()
+	_, err = client.Account.Login()
 	if err != nil {
 		klog.Error(err)
 		return nil, &cfg, fmt.Errorf("%v", err)
@@ -246,12 +246,12 @@ func (s *solver) newClientFromChallenge(ch *v1alpha1.ChallengeRequest) (*goinwx.
 		}
 	}
 
-	klog.V(3).Infof("logged in at %s", client.BaseURL)
+	klog.V(3).Infof("logged in at INWX API")
 
-	return &client, &cfg, nil
+	return client, &cfg, nil
 }
 
-func tryToUnlockWithOTPKey(creds *credentials, client goinwx.Client, retryAfterPauseToSatisfyInwxSingleOTPKeyUsagePolicy bool) (error, error) {
+func tryToUnlockWithOTPKey(creds *credentials, client *goinwx.Client, retryAfterPauseToSatisfyInwxSingleOTPKeyUsagePolicy bool) (error, error) {
 	tan, err := totp.GenerateCode(creds.OTPKey, time.Now())
 	if err != nil {
 		klog.Error(err)
