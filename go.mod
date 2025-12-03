@@ -6,7 +6,7 @@ require (
 	github.com/cert-manager/cert-manager v1.19.1
 	github.com/go-logr/logr v1.4.3
 	github.com/miekg/dns v1.1.68
-	github.com/nrdcg/goinwx v0.11.0
+	github.com/nrdcg/goinwx v0.12.0
 	github.com/pquerna/otp v1.5.0
 	k8s.io/api v0.34.2
 	k8s.io/apiextensions-apiserver v0.34.2
