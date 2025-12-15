@@ -344,7 +344,7 @@ func TestDNSChallengeSolver(t *testing.T) {
 			setupMocks: func(dns *MockDNSClient, secrets *MockSecretReader, config *MockConfigProvider) {
 				// Pre-populate a record to clean up
 				dns.Records["example.com-_acme-challenge.example.com"] = &goinwx.NameserverRecord{
-					ID:      123,
+					ID:      "123",
 					Name:    "_acme-challenge.example.com",
 					Type:    "TXT",
 					Content: "old-challenge-key",
@@ -365,8 +365,8 @@ func TestDNSChallengeSolver(t *testing.T) {
 					t.Errorf("Expected 1 record to be deleted, got %d", len(dns.DeletedRecordIDs))
 					return
 				}
-				if dns.DeletedRecordIDs[0] != 123 {
-					t.Errorf("Expected record ID 123 to be deleted, got %d", dns.DeletedRecordIDs[0])
+				if dns.DeletedRecordIDs[0] != "123" {
+					t.Errorf("Expected record ID 123 to be deleted, got %s", dns.DeletedRecordIDs[0])
 				}
 			},
 		},

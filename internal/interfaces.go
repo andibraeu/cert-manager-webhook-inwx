@@ -13,7 +13,7 @@ type DNSClient interface {
 	Logout() error
 	CreateRecord(request *goinwx.NameserverRecordRequest) error
 	InfoRecords(request *goinwx.NameserverInfoRequest) (*NameserverInfoResponse, error)
-	DeleteRecord(recordID int) error
+	DeleteRecord(recordID string) error
 	UnlockAccount(otpKey string) error
 }
 
