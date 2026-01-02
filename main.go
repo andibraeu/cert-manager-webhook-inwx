@@ -59,6 +59,8 @@ func (s *solver) Name() string {
 
 func (s *solver) Present(ch *v1alpha1.ChallengeRequest) error {
 
+	klog.V(2).Infof("present request: fqdn=%q zone=%q namespace=%q key_len=%d", ch.ResolvedFQDN, ch.ResolvedZone, ch.ResourceNamespace, len(ch.Key))
+
 	client, cfg, err := s.newClientFromChallenge(ch)
 	if err != nil {
 		return err
@@ -104,6 +106,8 @@ func (s *solver) Present(ch *v1alpha1.ChallengeRequest) error {
 
 func (s *solver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 
+	klog.V(2).Infof("cleanup request: fqdn=%q zone=%q namespace=%q", ch.ResolvedFQDN, ch.ResolvedZone, ch.ResourceNamespace)
+
 	client, _, err := s.newClientFromChallenge(ch)
 	if err != nil {
 		return err
@@ -116,18 +120,24 @@ func (s *solver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		klog.V(3).Infof("logged out from INWX API")
 	}()
 
-	response, err := client.Nameservers.Info(&goinwx.NameserverInfoRequest{
+	infoRequest := &goinwx.NameserverInfoRequest{
 		Domain: strings.TrimRight(ch.ResolvedZone, "."),
 		Name:   strings.TrimRight(ch.ResolvedFQDN, "."),
 		Type:   "TXT",
-	})
+	}
+
+	klog.V(2).Infof("listing DNS records: domain=%q name=%q type=%q", infoRequest.Domain, infoRequest.Name, infoRequest.Type)
+
+	response, err := client.Nameservers.Info(infoRequest)
 	if err != nil {
 		klog.Error(err)
 		return fmt.Errorf("%v", err)
 	}
 
 	var lastErr error
+	klog.V(2).Infof("found %d DNS records to delete", len(response.Records))
 	for _, record := range response.Records {
+		klog.V(3).Infof("deleting DNS record id=%q name=%q type=%q", record.ID, record.Name, record.Type)
 		err = client.Nameservers.DeleteRecord(record.ID)
 		if err != nil {
 			klog.Error(err)
@@ -156,8 +166,10 @@ func (s *solver) getCredentials(config *config, ns string) (*credentials, error)
 	creds := credentials{}
 
 	if config.Username != "" {
+		klog.V(3).Info("using username from config")
 		creds.Username = config.Username
 	} else {
+		klog.V(3).Infof("loading username from secret %q key %q", ns+"/"+config.UsernameSecretKeyRef.Name, config.UsernameSecretKeyRef.Key)
 		secret, err := s.client.CoreV1().Secrets(ns).Get(context.Background(), config.UsernameSecretKeyRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("failed to load secret %q", ns+"/"+config.UsernameSecretKeyRef.Name)
@@ -170,8 +182,10 @@ func (s *solver) getCredentials(config *config, ns string) (*credentials, error)
 	}
 
 	if config.Password != "" {
+		klog.V(3).Info("using password from config")
 		creds.Password = config.Password
 	} else {
+		klog.V(3).Infof("loading password from secret %q key %q", ns+"/"+config.PasswordSecretKeyRef.Name, config.PasswordSecretKeyRef.Key)
 		secret, err := s.client.CoreV1().Secrets(ns).Get(context.Background(), config.PasswordSecretKeyRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("failed to load secret %q", ns+"/"+config.PasswordSecretKeyRef.Name)
@@ -184,8 +198,10 @@ func (s *solver) getCredentials(config *config, ns string) (*credentials, error)
 	}
 
 	if config.OTPKey != "" {
+		klog.V(3).Info("using OTP key from config")
 		creds.OTPKey = config.OTPKey
 	} else if config.OTPKeySecretKeyRef.Key != "" {
+		klog.V(3).Infof("loading OTP key from secret %q key %q", ns+"/"+config.OTPKeySecretKeyRef.Name, config.OTPKeySecretKeyRef.Key)
 		secret, err := s.client.CoreV1().Secrets(ns).Get(context.Background(), config.OTPKeySecretKeyRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("failed to load secret %q", ns+"/"+config.OTPKeySecretKeyRef.Name)
@@ -226,6 +242,18 @@ func (s *solver) newClientFromChallenge(ch *v1alpha1.ChallengeRequest) (*goinwx.
 	}
 	s.ttl = cfg.TTL
 
+	klog.V(3).Infof(
+		"config summary: ttl=%d sandbox=%t username_inline=%t password_inline=%t otp_inline=%t username_ref=%t password_ref=%t otp_ref=%t",
+		cfg.TTL,
+		cfg.Sandbox,
+		cfg.Username != "",
+		cfg.Password != "",
+		cfg.OTPKey != "",
+		cfg.UsernameSecretKeyRef.Name != "",
+		cfg.PasswordSecretKeyRef.Name != "",
+		cfg.OTPKeySecretKeyRef.Name != "",
+	)
+
 	klog.V(5).Infof("decoded config: %v", cfg)
 
 	creds, err := s.getCredentials(&cfg, ch.ResourceNamespace)
@@ -235,6 +263,7 @@ func (s *solver) newClientFromChallenge(ch *v1alpha1.ChallengeRequest) (*goinwx.
 
 	client := goinwx.NewClient(creds.Username, creds.Password, &goinwx.ClientOptions{Sandbox: cfg.Sandbox})
 
+	klog.V(2).Infof("logging in to INWX API (sandbox=%t)", cfg.Sandbox)
 	_, err = client.Account.Login()
 	if err != nil {
 		klog.Error(err)
@@ -242,6 +271,7 @@ func (s *solver) newClientFromChallenge(ch *v1alpha1.ChallengeRequest) (*goinwx.
 	}
 
 	if creds.OTPKey != "" {
+		klog.V(2).Info("unlocking INWX account with OTP")
 		err, formattedError := tryToUnlockWithOTPKey(creds, client, true)
 		if err != nil {
 			return nil, &cfg, formattedError
@@ -254,15 +284,18 @@ func (s *solver) newClientFromChallenge(ch *v1alpha1.ChallengeRequest) (*goinwx.
 }
 
 func tryToUnlockWithOTPKey(creds *credentials, client *goinwx.Client, retryAfterPauseToSatisfyInwxSingleOTPKeyUsagePolicy bool) (error, error) {
+	klog.V(3).Infof("generating TOTP code (retry=%t)", retryAfterPauseToSatisfyInwxSingleOTPKeyUsagePolicy)
 	tan, err := totp.GenerateCode(creds.OTPKey, time.Now())
 	if err != nil {
 		klog.Error(err)
 		return nil, fmt.Errorf("error generating opt-key: %v", err)
 	}
 
+	klog.V(3).Info("unlocking INWX account with generated TOTP")
 	err = client.Account.Unlock(tan)
 
 	if err != nil && retryAfterPauseToSatisfyInwxSingleOTPKeyUsagePolicy {
+		klog.V(2).Info("OTP unlock failed; retrying after pause to satisfy INWX single-use policy")
 		time.Sleep(30 * time.Second)
 		return tryToUnlockWithOTPKey(creds, client, false)
 	} else if err != nil {
