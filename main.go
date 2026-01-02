@@ -79,6 +79,8 @@ func (s *solver) Present(ch *v1alpha1.ChallengeRequest) error {
 		TTL:     cfg.TTL,
 	}
 
+	klog.V(2).Infof("creating DNS record: domain=%q name=%q type=%q ttl=%d content_len=%d sandbox=%t", request.Domain, request.Name, request.Type, request.TTL, len(request.Content), cfg.Sandbox)
+
 	_, err = client.Nameservers.CreateRecord(request)
 	if err != nil {
 		switch er := err.(type) {
