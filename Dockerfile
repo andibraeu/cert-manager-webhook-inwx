@@ -10,13 +10,16 @@ RUN apk update && apk add --no-cache ca-certificates git
 
 # Copy go.mod and go.sum first for better caching
 COPY go.mod go.sum ./
-RUN go mod download
+# Mount Go module cache (persisted by buildx when using type=gha cache)
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
 # Copy source code
 COPY . .
 
-# Build the binary
-RUN CGO_ENABLED=0 GOARCH=$GOARCH GOARM=$GOARM go build -v -o webhook \
+# Build the binary (use Go build cache to speed up repeated builds)
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOARCH=$GOARCH GOARM=$GOARM GOCACHE=/root/.cache/go-build go build -v -o webhook \
     -ldflags '-w -s -extldflags "-static"' .
 
 # Use distroless for better security
