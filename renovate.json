@@ -16,6 +16,16 @@
     ],
     "packageRules": [
         {
+            "description": "Ignore indirect Go modules (managed via go mod tidy)",
+            "matchManagers": [
+                "gomod"
+            ],
+            "matchDepTypes": [
+                "indirect"
+            ],
+            "enabled": false
+        },
+        {
             "description": "Group only k8s.io packages",
             "matchManagers": [
                 "gomod"
