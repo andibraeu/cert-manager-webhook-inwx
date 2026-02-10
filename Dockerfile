@@ -1,7 +1,6 @@
 FROM golang:1.25-alpine AS build
 
-ARG GOARCH="amd64"
-ARG GOARM=""
+ARG TARGETARCH
 
 WORKDIR /workspace
 
@@ -19,7 +18,7 @@ COPY . .
 
 # Build the binary (use Go build cache to speed up repeated builds)
 RUN --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 GOARCH=$GOARCH GOARM=$GOARM GOCACHE=/root/.cache/go-build go build -v -o webhook \
+    CGO_ENABLED=0 GOARCH=${TARGETARCH} GOCACHE=/root/.cache/go-build go build -v -o webhook \
     -ldflags '-w -s -extldflags "-static"' .
 
 # Use distroless for better security
