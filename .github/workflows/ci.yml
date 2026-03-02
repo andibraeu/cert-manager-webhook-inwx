@@ -89,9 +89,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gettext-base
       
-      - name: Fetch test binaries
-        run: ./scripts/fetch-test-binaries.sh
-      
       - name: Prepare test config
         run: |
           # Set up environment variables for templates
