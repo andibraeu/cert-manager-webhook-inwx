@@ -32,7 +32,6 @@ test:
     GOPATH: $CI_PROJECT_DIR/.go
   script:
     - apk add --no-cache git g++ gettext curl
-    - scripts/fetch-test-binaries.sh
     - envsubst < testdata/config.json.tpl > testdata/config.json
     - envsubst < testdata/secret-inwx-credentials.yaml.tpl > testdata/secret-inwx-credentials.yaml
     - envsubst < testdata/config-otp.json.tpl > testdata/config-otp.json
