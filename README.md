@@ -160,11 +160,6 @@ spec:
 
 ### Running the test suite
 
-1. Download test binaries
-    ```bash
-    scripts/fetch-test-binaries.sh
-    ```
-
 1. Create two test accounts (one without 2FA and one with 2FA enabled) at <https://ote.inwx.com/en/customer/signup> or use existing ones.
 
    1. Without 2FA
