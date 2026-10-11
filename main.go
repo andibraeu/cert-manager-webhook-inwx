@@ -210,7 +210,7 @@ func loadConfig(cfgJSON *extapi.JSON) (config, error) {
 	if cfg.TTL == 0 {
 		cfg.TTL = defaultConfig.TTL
 	} else if cfg.TTL < 300 {
-		klog.Warningf("TTL must be greater or equal than 300. Using default %q", defaultConfig.TTL)
+		klog.Warningf("TTL must be greater or equal than 300. Using default %d", defaultConfig.TTL)
 		cfg.TTL = defaultConfig.TTL
 	}
 
