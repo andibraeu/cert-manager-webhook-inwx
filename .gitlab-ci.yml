@@ -1,4 +1,4 @@
-image: golang:1.26-alpine
+image: golang:1.27-alpine
 
 stages:
   - test
@@ -22,8 +22,9 @@ lint-go:
   stage: test
   script:
     - apk add --no-cache git
-    - go get -u golang.org/x/lint/golint
-    - golint -set_exit_status
+    # golint cannot read Go 1.27 export data. Same staticcheck commit as GitHub CI.
+    - go install honnef.co/go/tools/cmd/staticcheck@v0.7.0-0.dev.0.20261009230814-452d5bb86b45
+    - staticcheck ./...
   interruptible: true
 
 test:
